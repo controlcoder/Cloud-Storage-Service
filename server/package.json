@@ -21,6 +21,7 @@
     "google-auth-library": "^9.15.1",
     "mime-types": "^3.0.1",
     "mongoose": "^8.12.1",
+    "nodemailer": "^8.0.10",
     "redis": "^5.12.1",
     "resend": "^6.12.3",
     "zod": "^3.25.67"
