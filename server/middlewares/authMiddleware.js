@@ -8,8 +8,6 @@ export default async function checkAuth(req, res, next) {
     return res.status(401).json({ error: "Not logged in!" });
   }
 
-  console.log(sid);
-
   const session = await redis.json.get(`session:${sid}`);
 
   if (!session) {
