@@ -35,6 +35,10 @@ app.use((err, req, res, next) => {
   res.status(500).json(err);
 });
 
+app.get("/", (req, res) => {
+  return res.json({ message: "Hello from server" });
+});
+
 app.listen(PORT, () => {
   console.log(`Server Started`);
 });
