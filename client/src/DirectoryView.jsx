@@ -21,6 +21,7 @@ import {
 } from "./api/fileApi";
 import DetailsPopup from "./components/DetailsPopup";
 import ConfirmDeleteModal from "./components/ConfirmDeleteModel";
+import { BASE_URL } from "./api/axiosInstances";
 
 function DirectoryView() {
   const { dirId } = useParams();
@@ -102,7 +103,7 @@ function DirectoryView() {
 
   function handleRowClick(type, id) {
     if (type === "directory") navigate(`/directory/${id}`);
-    else window.location.href = `http://localhost:4000/file/${id}`;
+    else window.location.href = `${BASE_URL}/file/${id}`;
   }
 
   async function handleFileSelect(e) {

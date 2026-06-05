@@ -12,7 +12,7 @@ import { connectRedis } from "./config/redis.js";
 await connectDB();
 await connectRedis();
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT;
 
 const app = express();
 app.use(cookieParser(process.env.SESSION_SECRET));
