@@ -27,8 +27,7 @@ import OTP from "../models/otpModel.js";
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
-  port: 465,
-  service: "smtp.gmail.com",
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
