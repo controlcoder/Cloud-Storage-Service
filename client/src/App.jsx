@@ -1,14 +1,14 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import DirectoryView from "./DirectoryView";
 import Register from "./Register";
-import "./App.css";
 import Login from "./Login";
 import UsersPage from "./UsersPage";
+import ProtectedRoute from "./middleware/ProtectedRoute";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <DirectoryView />,
+    element: <ProtectedRoute />,
   },
   {
     path: "/register",
