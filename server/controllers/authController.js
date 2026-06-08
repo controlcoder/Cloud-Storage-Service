@@ -42,17 +42,17 @@ export const loginWithGoogle = async (req, res, next) => {
       });
     }
 
-    // const allSessions = await redis.ft.search(
-    //   "userIdIdx",
-    //   `@userId:{${user.id}}`,
-    //   {
-    //     RETURN: [],
-    //   }
-    // );
+    const allSessions = await redis.ft.search(
+      "userIdIdx",
+      `@userId:{${user.id}}`,
+      {
+        RETURN: [],
+      }
+    );
 
-    // if (allSessions.total >= 2) {
-    //   await redis.del(allSessions.documents[0].id);
-    // }
+    if (allSessions.total >= 2) {
+      await redis.del(allSessions.documents[0].id);
+    }
 
     if (!user.picture.includes("googleusercontent.com")) {
       user.picture = picture;

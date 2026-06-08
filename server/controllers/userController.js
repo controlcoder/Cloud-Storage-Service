@@ -97,17 +97,17 @@ export const login = async (req, res, next) => {
     return res.status(404).json({ error: "Invalid Credentials" });
   }
 
-  // const allSessions = await redis.ft.search(
-  //   "userIdIdx",
-  //   `@userId:{${user.id}}`,
-  //   {
-  //     RETURN: [],
-  //   }
-  // );
+  const allSessions = await redis.ft.search(
+    "userIdIdx",
+    `@userId:{${user.id}}`,
+    {
+      RETURN: [],
+    }
+  );
 
-  // if (allSessions.total >= 2) {
-  //   await redis.del(allSessions.documents[0].id);
-  // }
+  if (allSessions.total >= 2) {
+    await redis.del(allSessions.documents[0].id);
+  }
 
   const sessionId = crypto.randomUUID();
   const redisKey = `session:${sessionId}`;
@@ -176,14 +176,18 @@ export const logoutById = async (req, res, next) => {
 export const logoutAll = async (req, res) => {
   const { sid } = req.signedCookies;
   const session = await redis.json.get(`session:${sid}`);
-  // const allSessions = await redis.ft.search(
-  //   "userIdIdx",
-  //   `@userId:{${session.userId}}`,
-  //   {
-  //     RETURN: [],
-  //   }
-  // );
-  // await redis.del(allSessions.documents.map(({ id }) => id));
+  const allSessions = await redis.ft.search(
+    "userIdIdx",
+    `@userId:{${session.userId}}`,
+    {
+      RETURN: [],
+    }
+  );
+  await redis.del(allSessions.documents.map(({ id }) => id));
+
+  const result = await redis.ft.search("userIdIdx", "*");
+  console.log(result);
+
   res.status(204).end();
 };
 
