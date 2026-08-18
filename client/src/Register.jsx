@@ -204,7 +204,7 @@ const Register = () => {
             const data = await loginWithGoogle(credentialResponse.credential);
             if (!data.error) navigate("/");
           }}
-          onError={() => console.log("Login Failed")}
+          // onError={() => console.log("Login Failed")}
           theme="filled_blue"
           text="continue_with"
           useOneTap

@@ -164,10 +164,10 @@ function DirectoryView() {
     xhr.onload = async () => {
       if (xhr.status === 200) {
         const fileUploadResponse = await uploadComplete(fileId);
-        console.log(fileUploadResponse);
+        // console.log(fileUploadResponse);
       } else {
-        console.log(xhr.response);
-        console.log(xhr.responseText);
+        // console.log(xhr.response);
+        // console.log(xhr.responseText);
         setErrorMessage("File not uploaded");
         setTimeout(() => setErrorMessage(""), 3000);
       }

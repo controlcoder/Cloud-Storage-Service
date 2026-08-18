@@ -1,20 +1,6 @@
 import { createClient } from "redis";
 
-const redis = createClient({
-  url: process.env.REDIS_URL,
-  socket: {
-    reconnectStrategy: (retries) => {
-      if (retries > 3) {
-        console.log("Redis: Max retries reached");
-        return false;
-      }
-
-      console.log(`Redis: Retry attempt ${retries}`);
-
-      return Math.min(retries * 100, 3000);
-    },
-  },
-});
+const redis = createClient();
 
 redis.on("connect", () => {
   console.log("Redis connected");

@@ -118,7 +118,7 @@ export const uploadInitiate = async (req, res) => {
     const remainingSpace = user.maxStorageInBytes - rootDir.size;
 
     if (filesize > remainingSpace) {
-      console.log("File too large");
+      // console.log("File too large");
       return res.status(507).json({ error: "Not enough storage." });
     }
 
@@ -137,7 +137,7 @@ export const uploadInitiate = async (req, res) => {
     });
     res.json({ uploadSignedUrl, fileId: insertedFile.id });
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
 };
 

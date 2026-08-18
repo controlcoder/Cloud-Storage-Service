@@ -35,7 +35,16 @@ export const loginWithGoogle = async (req, res, next) => {
   const userData = await verifyIdToken(idToken);
   const { name, email, picture } = userData;
   const user = await User.findOne({ email }).select("-__v");
+
   if (user) {
+
+    if (user.authProvider !== "google") {
+      return res.status(400).json({
+        error:
+          "This email is registered with email login. Please use email login.",
+      });
+    }
+
     if (user.deleted) {
       return res.status(403).json({
         error: "Your account has been deleted. Contact app owner to recover.",
@@ -105,8 +114,9 @@ export const loginWithGoogle = async (req, res, next) => {
         email,
         picture,
         rootDirId,
+        authProvider: "google",
       },
-      { mongooseSession },
+      { session: mongooseSession },
     );
 
     const sessionId = crypto.randomUUID();

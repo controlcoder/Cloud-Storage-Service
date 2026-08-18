@@ -103,7 +103,7 @@ const Login = () => {
               console.error("Google login failed:", err);
             }
           }}
-          onError={() => console.log("Login Failed")}
+          // onError={() => console.log("Login Failed")}
           theme="filled_blue"
           text="continue_with"
           useOneTap

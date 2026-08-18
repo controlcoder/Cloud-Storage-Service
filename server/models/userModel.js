@@ -25,6 +25,12 @@ const userSchema = new Schema(
       type: String,
       minLength: 4,
     },
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
+      required: true,
+    },
     rootDirId: {
       type: Schema.Types.ObjectId,
       ref: "Directory",
@@ -51,7 +57,7 @@ const userSchema = new Schema(
   },
   {
     strict: "throw",
-  }
+  },
 );
 
 userSchema.pre("save", async function (next) {

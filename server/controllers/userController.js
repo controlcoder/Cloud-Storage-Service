@@ -40,7 +40,7 @@ export const register = async (req, res, next) => {
         parentDirId: null,
         userId,
       },
-      { session }
+      { session },
     );
 
     await User.insertOne(
@@ -50,8 +50,9 @@ export const register = async (req, res, next) => {
         email,
         password,
         rootDirId,
+        authProvider: "local",
       },
-      { session }
+      { session },
     );
 
     session.commitTransaction();
@@ -85,16 +86,29 @@ export const login = async (req, res, next) => {
   }
 
   const { email, password } = data;
+
   const user = await User.findOne({ email });
 
   if (!user) {
-    return res.status(404).json({ error: "Invalid Credentials" });
+    return res.status(401).json({ error: "Invalid Credentials" });
+  }
+
+  if (user.authProvider === "google") {
+    return res.status(400).json({
+      error: "This account uses Google login. Please continue with Google.",
+    });
+  }
+
+  if (user.deleted) {
+    return res.status(403).json({
+      error: "Your account has been deleted. Contact app owner to recover.",
+    });
   }
 
   const isPasswordValid = await user.comparePassword(password);
 
   if (!isPasswordValid) {
-    return res.status(404).json({ error: "Invalid Credentials" });
+    return res.status(401).json({ error: "Invalid Credentials" });
   }
 
   const allSessions = await redis.ft.search(
@@ -102,7 +116,7 @@ export const login = async (req, res, next) => {
     `@userId:{${user.id}}`,
     {
       RETURN: [],
-    }
+    },
   );
 
   if (allSessions.total >= 2) {
@@ -181,12 +195,12 @@ export const logoutAll = async (req, res) => {
     `@userId:{${session.userId}}`,
     {
       RETURN: [],
-    }
+    },
   );
   await redis.del(allSessions.documents.map(({ id }) => id));
 
   const result = await redis.ft.search("userIdIdx", "*");
-  console.log(result);
+  // console.log(result);
 
   res.status(204).end();
 };

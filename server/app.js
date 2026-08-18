@@ -30,7 +30,7 @@ app.use("/", userRoutes);
 app.use("/auth", authRoutes);
 
 app.use((err, req, res, next) => {
-  console.log(err);
+  // console.log(err);
   // res.status(err.status || 500).json({ error: "Something went wrong!" });
   res.status(500).json(err);
 });
