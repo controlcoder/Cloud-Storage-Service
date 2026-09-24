@@ -1,7 +1,6 @@
 import Directory from "../models/directoryModel.js";
 import User from "../models/userModel.js";
 import mongoose, { Types } from "mongoose";
-import Session from "../models/sessionModel.js";
 // import OTP from "../models/otpModel.js";
 import redis from "../config/redis.js";
 import { z } from "zod/v4";
@@ -80,7 +79,6 @@ export const register = async (req, res, next) => {
 
 export const login = async (req, res, next) => {
   const { success, data } = loginSchema.safeParse(req.body);
-
   if (!success) {
     return res.status(400).json({ error: "Invalid Credentials" });
   }
@@ -88,7 +86,6 @@ export const login = async (req, res, next) => {
   const { email, password } = data;
 
   const user = await User.findOne({ email });
-
   if (!user) {
     return res.status(401).json({ error: "Invalid Credentials" });
   }
@@ -98,7 +95,6 @@ export const login = async (req, res, next) => {
       error: "This account uses Google login. Please continue with Google.",
     });
   }
-
   if (user.deleted) {
     return res.status(403).json({
       error: "Your account has been deleted. Contact app owner to recover.",
@@ -106,7 +102,6 @@ export const login = async (req, res, next) => {
   }
 
   const isPasswordValid = await user.comparePassword(password);
-
   if (!isPasswordValid) {
     return res.status(401).json({ error: "Invalid Credentials" });
   }
@@ -118,7 +113,6 @@ export const login = async (req, res, next) => {
       RETURN: [],
     },
   );
-
   if (allSessions.total >= 2) {
     await redis.del(allSessions.documents[0].id);
   }
@@ -128,6 +122,7 @@ export const login = async (req, res, next) => {
   await redis.json.set(redisKey, "$", {
     userId: user._id,
     rootDirId: user.rootDirId,
+    role: user.role,
   });
 
   const sessionExpiryTime = 60 * 1000 * 60 * 24 * 7;
@@ -144,11 +139,15 @@ export const login = async (req, res, next) => {
 };
 
 export const getAllUsers = async (req, res) => {
-  const allUsers = await User.find({ deleted: false }).lean();
-  const allSessions = await Session.find().lean();
-  const allSessionsUserId = allSessions.map(({ userId }) => userId.toString());
-  const allSessionsUserIdSet = new Set(allSessionsUserId);
+  const allSessionsUserIdSet = new Set();
 
+  const keys = await redis.keys("session:*");
+  for (const key of keys) {
+    const { userId } = await redis.json.get(key);
+    allSessionsUserIdSet.add(userId);
+  }
+
+  const allUsers = await User.find({ deleted: false }).lean();
   const transformedUsers = allUsers.map(({ _id, name, email }) => ({
     id: _id,
     name,
@@ -180,7 +179,16 @@ export const logout = async (req, res) => {
 
 export const logoutById = async (req, res, next) => {
   try {
-    await Session.deleteMany({ userId: req.params.userId });
+    const result = await redis.ft.search(
+      "userIdIdx",
+      `@userId:{${req.params.userId}}`,
+      {
+        RETURN: [],
+      },
+    );
+    for (const doc of result.documents) {
+      await redis.del(doc.id);
+    }
     res.status(204).end();
   } catch (err) {
     next(err);
@@ -198,10 +206,6 @@ export const logoutAll = async (req, res) => {
     },
   );
   await redis.del(allSessions.documents.map(({ id }) => id));
-
-  const result = await redis.ft.search("userIdIdx", "*");
-  // console.log(result);
-
   res.status(204).end();
 };
 
@@ -211,7 +215,16 @@ export const deleteUser = async (req, res, next) => {
     return res.status(403).json({ error: "You can not delete yourself." });
   }
   try {
-    await Session.deleteMany({ userId });
+    const result = await redis.ft.search(
+      "userIdIdx",
+      `@userId:{${req.params.userId}}`,
+      {
+        RETURN: [],
+      },
+    );
+    for (const doc of result.documents) {
+      await redis.del(doc.id);
+    }
     await User.findByIdAndUpdate(userId, { deleted: true });
     res.status(204).end();
   } catch (err) {
