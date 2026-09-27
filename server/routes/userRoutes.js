@@ -12,6 +12,7 @@ import {
   logoutAll,
   logoutById,
   register,
+  restoreUser,
 } from "../controllers/userController.js";
 
 const router = express.Router();
@@ -35,5 +36,7 @@ router.post(
 );
 
 router.delete("/users/:userId", checkAuth, checkIsAdminUser, deleteUser);
+
+router.patch("/users/:userId", checkAuth, checkIsAdminUser, restoreUser);
 
 export default router;

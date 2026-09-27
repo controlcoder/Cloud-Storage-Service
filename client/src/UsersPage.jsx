@@ -4,6 +4,7 @@ import {
   fetchAllUsers,
   fetchUser,
   deleteUserById,
+  restoreUserById,
   logoutUserById,
 } from "./api/userApi";
 
@@ -14,22 +15,33 @@ export default function UsersPage() {
   const [userRole, setUserRole] = useState("User");
   const navigate = useNavigate();
 
-  const logoutUser = async (user) => {
-    const confirmed = confirm(`You are about to logout ${user.email}`);
+  const logoutUser = async (id, email) => {
+    const confirmed = confirm(`You are about to logout ${email}`);
     if (!confirmed) return;
     try {
-      await logoutUserById(user.id);
+      await logoutUserById(id);
       fetchUsers();
     } catch (err) {
       console.error("Logout error:", err);
     }
   };
 
-  const deleteUser = async (user) => {
-    const confirmed = confirm(`You are about to delete ${user.email}`);
+  const deleteUser = async (id, email) => {
+    const confirmed = confirm(`You are about to delete ${email}`);
     if (!confirmed) return;
     try {
-      await deleteUserById(user.id);
+      await deleteUserById(id);
+      fetchUsers();
+    } catch (err) {
+      console.error("Delete error:", err);
+    }
+  };
+
+  const restoreUser = async (id, email) => {
+    const confirmed = confirm(`You are about to restore ${email}`);
+    if (!confirmed) return;
+    try {
+      await restoreUserById(id);
       fetchUsers();
     } catch (err) {
       console.error("Delete error:", err);
@@ -84,39 +96,53 @@ export default function UsersPage() {
           </tr>
         </thead>
         <tbody>
-          {users.map((user) => (
-            <tr key={user.id}>
-              <td className="border p-3">{user.name}</td>
-              <td className="border p-3">{user.email}</td>
+          {users.map(({ id, name, email, isLoggedIn, isDeleted, isAdmin }) => (
+            <tr key={id}>
+              <td className="border p-3">{name}</td>
+              <td className="border p-3">{email}</td>
               <td className="border p-3">
-                {user.isLoggedIn ? "Logged In" : "Logged Out"}
+                {isAdmin ? "Admin" : isLoggedIn ? "Logged In" : "Logged Out"}
               </td>
               <td className="border p-3">
                 <button
-                  onClick={() => logoutUser(user)}
-                  disabled={!user.isLoggedIn}
+                  onClick={() => logoutUser(id, email)}
+                  disabled={!isLoggedIn || isAdmin}
                   className={`px-3 py-1 text-sm text-white rounded ${
-                    user.isLoggedIn
-                      ? "bg-blue-600 hover:bg-blue-700"
-                      : "bg-gray-400 cursor-not-allowed"
+                    isAdmin
+                      ? "bg-blue-400 cursor-not-allowed"
+                      : isLoggedIn
+                        ? "bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                        : "bg-gray-400 cursor-not-allowed"
                   }`}
                 >
-                  Logout
+                  {isAdmin ? "Admin" : "Logout"}
                 </button>
               </td>
               {userRole === "Admin" && (
                 <td className="border p-3">
-                  <button
-                    onClick={() => deleteUser(user)}
-                    disabled={user.email === userEmail}
-                    className={`px-3 py-1 text-sm text-white rounded ${
-                      user.email === userEmail
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-red-600 hover:bg-red-700"
-                    }`}
-                  >
-                    Delete
-                  </button>
+                  {email === userEmail ? (
+                    <button
+                      disabled
+                      className={`px-3 py-1 text-sm text-white rounded bg-blue-400 cursor-not-allowed`}
+                    >
+                      Admin
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        if (isDeleted) restoreUser(id, email);
+                        else deleteUser(id, email);
+                      }}
+                      disabled={email === userEmail}
+                      className={`px-3 py-1 text-sm text-white rounded ${
+                        isDeleted
+                          ? "bg-green-600 hover:bg-green-700 cursor-pointer"
+                          : "bg-red-600 hover:bg-red-700 cursor-pointer"
+                      }`}
+                    >
+                      {isDeleted ? "Restore" : "Delete"}
+                    </button>
+                  )}
                 </td>
               )}
             </tr>

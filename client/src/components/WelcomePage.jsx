@@ -98,7 +98,7 @@ function WelcomePage() {
       </section>
 
       {/* Features */}
-      <section className="max-w-7xl mx-auto px-8 py-16">
+      {/* <section className="max-w-7xl mx-auto px-8 py-16">
         <h2 className="text-3xl font-bold text-center mb-12">
           Features
         </h2>
@@ -144,7 +144,7 @@ function WelcomePage() {
             </p>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* CTA */}
       <section className="py-20 px-8">

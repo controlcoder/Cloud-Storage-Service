@@ -43,3 +43,8 @@ export const deleteUserById = async (id) => {
   const { data } = await axiosWithCreds.delete(`/users/${id}`);
   return data;
 };
+
+export const restoreUserById = async (id) => {
+  const { data } = await axiosWithCreds.patch(`/users/${id}`);
+  return data;
+};

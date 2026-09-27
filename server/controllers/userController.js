@@ -147,13 +147,17 @@ export const getAllUsers = async (req, res) => {
     allSessionsUserIdSet.add(userId);
   }
 
-  const allUsers = await User.find({ deleted: false }).lean();
-  const transformedUsers = allUsers.map(({ _id, name, email }) => ({
-    id: _id,
-    name,
-    email,
-    isLoggedIn: allSessionsUserIdSet.has(_id.toString()),
-  }));
+  const allUsers = await User.find().lean();
+  const transformedUsers = allUsers.map(
+    ({ _id, name, email, deleted, role }) => ({
+      id: _id,
+      name,
+      email,
+      isLoggedIn: allSessionsUserIdSet.has(_id.toString()),
+      isDeleted: deleted,
+      isAdmin: role === "Admin",
+    }),
+  );
   res.status(200).json(transformedUsers);
 };
 
@@ -226,6 +230,19 @@ export const deleteUser = async (req, res, next) => {
       await redis.del(doc.id);
     }
     await User.findByIdAndUpdate(userId, { deleted: true });
+    res.status(204).end();
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const restoreUser = async (req, res, next) => {
+  const { userId } = req.params;
+  if (req.user._id.toString() === userId) {
+    return res.status(403).json({ error: "You can not restore yourself." });
+  }
+  try {
+    await User.findByIdAndUpdate(userId, { deleted: false });
     res.status(204).end();
   } catch (err) {
     next(err);
